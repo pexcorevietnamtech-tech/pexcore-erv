@@ -64,6 +64,7 @@ def compute_design(inp):
     height     = inp["height"]
     rooms      = max(1, inp["rooms"])
     candidates = esp_ok or nom_ok or flow_ok or [CENTRAL_ERV_CATALOG[-1]]
+    candidates = esp_ok or nom_ok or flow_ok or [CENTRAL_ERV_CATALOG[-1]]
 
     hot_humid_dh = 28.0
     rho = 1.2
