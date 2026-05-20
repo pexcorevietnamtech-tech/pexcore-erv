@@ -63,54 +63,6 @@ def compute_design(inp):
     area       = inp["area"]
     height     = inp["height"]
     rooms      = max(1, inp["rooms"])
-    wcs        = max(0, inp["wcs"])
-    kitchens   = max(0, inp["kitchens"])
-    occupancy  = max(1, inp["occupancy"])
-    ach        = inp["ach"]
-    margin_pct = inp["margin_pct"]
-    filter_type = inp.get("filter_type", "F7")
-
-    volume         = area * height
-    flow_ach       = volume * ach
-    flow_people    = occupancy * 25.0
-    flow_supply    = rooms * 30.0
-    base_flow      = max(flow_ach, flow_people, flow_supply)
-    flow_extract   = rooms * 25.0 + wcs * 20.0 + kitchens * 30.0
-    design_flow    = max(base_flow, flow_extract) * (1 + margin_pct / 100.0)
-    loading_target = inp.get("loading_target", 80) / 100.0
-    required_nom   = design_flow / loading_target
-
-    # ESP
-    trunk_len   = inp.get("trunk_len", 8.0)
-    branch_len  = inp.get("branch_len", 10.0)
-    duct_esp    = trunk_len * 1.65 + branch_len * 1.25
-    filter_dp   = {"F7":65, "G3":18, "G3+F7":83, "None":0}.get(filter_type, 65)
-    fouling     = {"F7":20, "G3":12, "G3+F7":25, "None":10}.get(filter_type, 20)
-    required_esp = 46 + duct_esp + 18 + 6 + 10 + filter_dp + fouling + max(8, design_flow * 0.02)
-
-    return {
-        "area": area, "height": height, "volume": volume,
-        "rooms": rooms, "wcs": wcs, "kitchens": kitchens, "occupancy": occupancy,
-        "flow_ach": round(flow_ach, 1),
-        "flow_people": round(flow_people, 1),
-        "flow_supply_base": round(base_flow, 1),
-        "flow_extract": round(flow_extract, 1),
-        "design_flow": round(design_flow, 1),
-        "required_nominal": round(required_nom, 1),
-        "required_esp": round(required_esp, 1),
-        "filter_dp": filter_dp,
-        "loading_target": loading_target,
-    }
-
-def select_model(d, loading_target=0.80, filter_type="F7"):
-    required_flow = d["design_flow"]
-    required_nom  = d["required_nominal"]
-    required_esp  = d["required_esp"]
-    min_esp       = required_esp * 0.92
-
-    esp_ok   = [m for m in CENTRAL_ERV_CATALOG if m["flow"] >= required_nom and m["esp"] >= min_esp]
-    nom_ok   = [m for m in CENTRAL_ERV_CATALOG if m["flow"] >= required_nom]
-    flow_ok  = [m for m in CENTRAL_ERV_CATALOG if m["flow"] >= required_flow]
     candidates = esp_ok or nom_ok or flow_ok or [CENTRAL_ERV_CATALOG[-1]]
 
     hot_humid_dh = 28.0
